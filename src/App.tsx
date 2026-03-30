@@ -2,8 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import AdminLoginPage from "./pages/AdminLoginPage";
@@ -38,72 +37,6 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-// Allowed local subnets for admin/staff access
-const ALLOWED_SUBNETS = ["10.10.1.251", "192.168.20.", "127.0.0.", "::1", "localhost"];
-
-const LocalNetworkGuard = ({ children }: { children: React.ReactNode }) => {
-  const [allowed, setAllowed] = useState<boolean | null>(null);
-  const location = useLocation();
-
-  useEffect(() => {
-    const getLocalIPs = (): Promise<string[]> => {
-      return new Promise((resolve) => {
-        const ips: string[] = [];
-        const pc = new RTCPeerConnection({ iceServers: [] });
-        pc.createDataChannel("");
-        pc.createOffer().then(offer => pc.setLocalDescription(offer));
-        pc.onicecandidate = (ice) => {
-          if (!ice || !ice.candidate || !ice.candidate.candidate) {
-            pc.close();
-            resolve(ips);
-            return;
-          }
-          const match = ice.candidate.candidate.match(/([0-9]{1,3}(\.[0-9]{1,3}){3})/);
-          if (match) ips.push(match[1]);
-        };
-        setTimeout(() => { pc.close(); resolve(ips); }, 1000);
-      });
-    };
-
-    const checkLocalNetwork = async () => {
-      try {
-        // Always allow localhost/development
-        if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-          setAllowed(true);
-          return;
-        }
-
-        // Get local IPs via WebRTC
-        const localIPs = await getLocalIPs();
-        const isLocal = localIPs.some(ip => 
-          ALLOWED_SUBNETS.some(subnet => ip.startsWith(subnet))
-        );
-        setAllowed(isLocal);
-      } catch {
-        setAllowed(false);
-      }
-    };
-    checkLocalNetwork();
-  }, [location]);
-
-  if (allowed === null) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Memeriksa akses jaringan...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!allowed) {
-    return <NotFound />;
-  }
-
-  return <>{children}</>;
-};
-
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -113,33 +46,33 @@ const App = () => (
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
-          
-          {/* Admin routes - hanya bisa diakses dari jaringan lokal */}
-          <Route path="/admin/login" element={<LocalNetworkGuard><AdminLoginPage /></LocalNetworkGuard>} />
-          <Route path="/admin/dashboard" element={<LocalNetworkGuard><AdminDashboard /></LocalNetworkGuard>} />
-          <Route path="/admin/customers" element={<LocalNetworkGuard><AdminCustomers /></LocalNetworkGuard>} />
-          <Route path="/admin/customers/:id" element={<LocalNetworkGuard><CustomerDetail /></LocalNetworkGuard>} />
-          <Route path="/admin/packages" element={<LocalNetworkGuard><AdminPackages /></LocalNetworkGuard>} />
-          <Route path="/admin/reports" element={<LocalNetworkGuard><AdminReports /></LocalNetworkGuard>} />
-          <Route path="/admin/staff" element={<LocalNetworkGuard><AdminStaff /></LocalNetworkGuard>} />
-          <Route path="/admin/registration" element={<LocalNetworkGuard><AdminRegistration /></LocalNetworkGuard>} />
-          <Route path="/admin/installation" element={<LocalNetworkGuard><AdminInstallation /></LocalNetworkGuard>} />
-          <Route path="/admin/inventory" element={<LocalNetworkGuard><AdminInventory /></LocalNetworkGuard>} />
-          <Route path="/admin/invoices" element={<LocalNetworkGuard><AdminInvoices /></LocalNetworkGuard>} />
-          <Route path="/admin/payments" element={<LocalNetworkGuard><AdminPayments /></LocalNetworkGuard>} />
-          <Route path="/admin/profile" element={<LocalNetworkGuard><AdminProfile /></LocalNetworkGuard>} />
-          <Route path="/admin/whatsapp" element={<LocalNetworkGuard><AdminWhatsApp /></LocalNetworkGuard>} />
-          <Route path="/admin/network" element={<LocalNetworkGuard><AdminNetwork /></LocalNetworkGuard>} />
-          <Route path="/admin/latency" element={<LocalNetworkGuard><AdminLatency /></LocalNetworkGuard>} />
-          <Route path="/admin/tickets" element={<LocalNetworkGuard><AdminTickets /></LocalNetworkGuard>} />
-          <Route path="/admin/settings" element={<LocalNetworkGuard><AdminSettings /></LocalNetworkGuard>} />
 
-          {/* Staff routes - hanya bisa diakses dari jaringan lokal */}
-          <Route path="/staff/dashboard" element={<LocalNetworkGuard><StaffDashboard /></LocalNetworkGuard>} />
-          <Route path="/staff/tickets" element={<LocalNetworkGuard><StaffTickets /></LocalNetworkGuard>} />
-          <Route path="/staff/troubleshoot" element={<LocalNetworkGuard><StaffTroubleshoot /></LocalNetworkGuard>} />
-          <Route path="/staff/chat" element={<LocalNetworkGuard><StaffChat /></LocalNetworkGuard>} />
-          <Route path="/staff/profile" element={<LocalNetworkGuard><StaffProfile /></LocalNetworkGuard>} />
+          {/* Admin routes - dilindungi Nginx (hanya 10.10.1.x) */}
+          <Route path="/admin/login" element={<AdminLoginPage />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/customers" element={<AdminCustomers />} />
+          <Route path="/admin/customers/:id" element={<CustomerDetail />} />
+          <Route path="/admin/packages" element={<AdminPackages />} />
+          <Route path="/admin/reports" element={<AdminReports />} />
+          <Route path="/admin/staff" element={<AdminStaff />} />
+          <Route path="/admin/registration" element={<AdminRegistration />} />
+          <Route path="/admin/installation" element={<AdminInstallation />} />
+          <Route path="/admin/inventory" element={<AdminInventory />} />
+          <Route path="/admin/invoices" element={<AdminInvoices />} />
+          <Route path="/admin/payments" element={<AdminPayments />} />
+          <Route path="/admin/profile" element={<AdminProfile />} />
+          <Route path="/admin/whatsapp" element={<AdminWhatsApp />} />
+          <Route path="/admin/network" element={<AdminNetwork />} />
+          <Route path="/admin/latency" element={<AdminLatency />} />
+          <Route path="/admin/tickets" element={<AdminTickets />} />
+          <Route path="/admin/settings" element={<AdminSettings />} />
+
+          {/* Staff routes - dilindungi Nginx (hanya 10.10.1.x) */}
+          <Route path="/staff/dashboard" element={<StaffDashboard />} />
+          <Route path="/staff/tickets" element={<StaffTickets />} />
+          <Route path="/staff/troubleshoot" element={<StaffTroubleshoot />} />
+          <Route path="/staff/chat" element={<StaffChat />} />
+          <Route path="/staff/profile" element={<StaffProfile />} />
 
           {/* Customer routes - bisa diakses dari mana aja */}
           <Route path="/customer/dashboard" element={<CustomerDashboard />} />
@@ -147,7 +80,7 @@ const App = () => (
           <Route path="/customer/tickets" element={<CustomerTickets />} />
           <Route path="/customer/history" element={<CustomerHistory />} />
           <Route path="/customer/profile" element={<CustomerProfile />} />
-          
+
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
