@@ -17,6 +17,12 @@ import {
 import logo from "@/assets/logo.png";
 import { supabase } from "@/integrations/supabase/client";
 
+const coverageAreas = [
+  { name: "Cibitung", status: "active", description: "Bekasi, Jawa Barat" },
+  { name: "Kalideres", status: "active", description: "Jakarta Barat" },
+  { name: "Poris", status: "active", description: "Tangerang, Banten" },
+];
+
 const WA_NUMBER = "6287772591561";
 
 const formatPrice = (price: number) => {
@@ -204,6 +210,50 @@ const HomePage = () => {
         </section>
       )}
 
+      {/* Coverage Area Section */}
+      <section id="coverage" className="py-20 bg-secondary/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-foreground mb-4">Area Jangkauan</h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Kami terus berkembang untuk melayani lebih banyak wilayah
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
+            {coverageAreas.map((area, index) => (
+              <Card key={index} className="text-center border-green-500/50 hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <div className="mx-auto bg-green-500/10 p-4 rounded-full w-fit">
+                    <MapPin className="h-8 w-8 text-green-500" />
+                  </div>
+                  <CardTitle className="text-xl">{area.name}</CardTitle>
+                  <div className="inline-flex items-center gap-1 bg-green-500/10 text-green-600 px-3 py-1 rounded-full text-sm font-medium mx-auto">
+                    <span className="w-2 h-2 bg-green-500 rounded-full inline-block"></span>
+                    Tersedia
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">{area.description}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          <div className="text-center">
+            <p className="text-muted-foreground mb-4">Belum ada di daerah Anda? Hubungi kami untuk info ekspansi area</p>
+            <a
+              href={`https://wa.me/6287772591561?text=${encodeURIComponent("Halo Latansa Network! Saya ingin menanyakan ketersediaan layanan di daerah saya.")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Button className="gap-2 bg-green-600 hover:bg-green-700 text-white">
+                <MessageCircle className="h-4 w-4" />
+                Tanya Ketersediaan Area
+              </Button>
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* Contact Section */}
       <section id="contact" className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -271,6 +321,17 @@ const HomePage = () => {
           </div>
         </div>
       </footer>
+
+      {/* Floating WA Button */}
+      <a
+        href={`https://wa.me/6287772591561?text=${encodeURIComponent("Halo Latansa Network! Saya membutuhkan bantuan.")}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 z-50 bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-lg transition-all hover:scale-110"
+        title="Chat via WhatsApp"
+      >
+        <MessageCircle className="h-6 w-6" />
+      </a>
     </div>
   );
 };
