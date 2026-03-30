@@ -46,25 +46,41 @@ const LocalNetworkGuard = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
 
   useEffect(() => {
+    const getLocalIPs = (): Promise<string[]> => {
+      return new Promise((resolve) => {
+        const ips: string[] = [];
+        const pc = new RTCPeerConnection({ iceServers: [] });
+        pc.createDataChannel("");
+        pc.createOffer().then(offer => pc.setLocalDescription(offer));
+        pc.onicecandidate = (ice) => {
+          if (!ice || !ice.candidate || !ice.candidate.candidate) {
+            pc.close();
+            resolve(ips);
+            return;
+          }
+          const match = ice.candidate.candidate.match(/([0-9]{1,3}(\.[0-9]{1,3}){3})/);
+          if (match) ips.push(match[1]);
+        };
+        setTimeout(() => { pc.close(); resolve(ips); }, 1000);
+      });
+    };
+
     const checkLocalNetwork = async () => {
       try {
-        // Fetch user's IP via public API
-        const res = await fetch("https://api.ipify.org?format=json");
-        const data = await res.json();
-        const ip: string = data.ip;
+        // Always allow localhost/development
+        if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+          setAllowed(true);
+          return;
+        }
 
-        // Check if IP is in allowed local range
-        const isLocal = ALLOWED_SUBNETS.some(subnet => ip.startsWith(subnet)) ||
-          ip === "127.0.0.1" ||
-          window.location.hostname === "localhost" ||
-          window.location.hostname === "127.0.0.1";
-
+        // Get local IPs via WebRTC
+        const localIPs = await getLocalIPs();
+        const isLocal = localIPs.some(ip => 
+          ALLOWED_SUBNETS.some(subnet => ip.startsWith(subnet))
+        );
         setAllowed(isLocal);
       } catch {
-        // If can't check, allow if accessing from localhost
-        const isLocalhost = window.location.hostname === "localhost" ||
-          window.location.hostname === "127.0.0.1";
-        setAllowed(isLocalhost);
+        setAllowed(false);
       }
     };
     checkLocalNetwork();
