@@ -85,7 +85,7 @@ const HeroSection = () => {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-white/90">Coverage Area</span>
-                  <span className="text-2xl font-bold text-accent">Jawa Timur</span>
+                  <span className="text-2xl font-bold text-accent">Cibitung, Kalideres, Poris</span>
                 </div>
               </div>
             </div>
