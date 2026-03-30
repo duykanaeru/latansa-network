@@ -39,7 +39,7 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 // Allowed local subnets for admin/staff access
-const ALLOWED_SUBNETS = ["10.10.1.", "192.168.20.", "127.0.0.", "::1", "localhost"];
+const ALLOWED_SUBNETS = ["10.10.1.251", "192.168.20.", "127.0.0.", "::1", "localhost"];
 
 const LocalNetworkGuard = ({ children }: { children: React.ReactNode }) => {
   const [allowed, setAllowed] = useState<boolean | null>(null);
