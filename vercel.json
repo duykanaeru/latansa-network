@@ -1,0 +1,17 @@
+{
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/admin/(.*)",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex" }]
+    }
+  ],
+  "redirects": [
+    { "source": "/admin", "destination": "/404", "permanent": false },
+    { "source": "/admin/(.*)", "destination": "/404", "permanent": false },
+    { "source": "/staff", "destination": "/404", "permanent": false },
+    { "source": "/staff/(.*)", "destination": "/404", "permanent": false }
+  ]
+}
