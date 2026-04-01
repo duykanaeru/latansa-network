@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNetworkGuard } from "@/hooks/useNetworkGuard";
 import { useNavigate, Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,6 +10,11 @@ import { authService } from "@/lib/auth";
 import { Shield, ArrowLeft } from "lucide-react";
 
 const AdminLoginPage = () => {
+  const isAllowed = useNetworkGuard()
+
+  if (isAllowed === null) return <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:"100vh"}}>Checking access...</div>
+  if (!isAllowed) return <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:"100vh",fontSize:"2rem"}}>403 - Access Denied</div>
+
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
