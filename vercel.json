@@ -9,6 +9,8 @@
     }
   ],
   "redirects": [
+    { "source": "/admin", "destination": "/404", "permanent": false },
+    { "source": "/admin/(.*)", "destination": "/404", "permanent": false },
     { "source": "/staff", "destination": "/404", "permanent": false },
     { "source": "/staff/(.*)", "destination": "/404", "permanent": false }
   ]
